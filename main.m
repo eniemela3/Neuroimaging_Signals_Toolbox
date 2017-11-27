@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 27-Nov-2017 18:08:37
+% Last Modified by GUIDE v2.5 27-Nov-2017 20:47:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -42,6 +42,13 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
+
+%addpath('data', 'functions');
+
+global signal1 signal2 Fs;
+%signal1 = 0; % temp initialization needed for plotSignals.m
+%signal2 = 0; % temp initialization needed for plotSignals.m
+Fs = 10; % Hz
 
 % --- Executes just before main is made visible.
 function main_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -116,30 +123,43 @@ end
 
 delete(handles.figure1)
 
+%% Signal 1 & 2 select drop down menus
 
-% --- Executes on selection change in chooseSignal1.
-function chooseSignal1_Callback(hObject, eventdata, handles)
-% hObject    handle to chooseSignal1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns chooseSignal1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from chooseSignal1
-selected = get(handles, 'Value')
-
-% --- Executes during object creation, after setting all properties.
 function chooseSignal1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to chooseSignal1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
 
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
+set(hObject, 'Value', 1);
 set(hObject, 'String', listFiles());
+
+function chooseSignal2_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Value', 1);
+set(hObject, 'String', listFiles());
+
+function chooseSignal1_Callback(hObject, eventdata, handles)
+global signal1
+selected = get(hObject, 'Value');
+files = get(hObject, 'String');
+if selected > 1
+    signal1 = load(files(selected, :));
+else
+    signal1 = 0;
+end
+
+function chooseSignal2_Callback(hObject, eventdata, handles)
+global signal2
+selected = get(hObject, 'Value');
+files = get(hObject, 'String');
+if selected > 1
+    signal2 = load(files(selected, :));
+else
+    signal2 = 0;
+end
 
 % --- Executes on button press in filterSignal1.
 function filterSignal1_Callback(hObject, eventdata, handles)
@@ -158,28 +178,6 @@ function saveSignals_Callback(hObject, eventdata, handles)
 
 
 % --- Executes on selection change in chooseSignal2.
-function chooseSignal2_Callback(hObject, eventdata, handles)
-% hObject    handle to chooseSignal2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns chooseSignal2 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from chooseSignal2
-
-
-% --- Executes during object creation, after setting all properties.
-function chooseSignal2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to chooseSignal2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-set(hObject, 'String', listFiles());
-
 
 % --- Executes on button press in filterSignal2.
 function filterSignal2_Callback(hObject, eventdata, handles)
@@ -211,4 +209,9 @@ function showFFT2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on selection change in popupmenu5.
+% --- Executes on button press in updateGraph.
+function updateGraph_Callback(hObject, eventdata, handles)
+% hObject    handle to updateGraph (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+plotSignals();
