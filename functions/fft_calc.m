@@ -15,3 +15,6 @@ Y=fft(x);
 f=Fs/2*linspace(0,1,L/2+1);
 figure;
 plot(f,(2*abs(Y(1:L/2+1))));
+ylabel('Power');
+xlabel('Frequency (Hz)');
+title('Power Spectrum');

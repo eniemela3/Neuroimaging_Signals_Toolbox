@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 27-Nov-2017 20:47:59
+% Last Modified by GUIDE v2.5 29-Nov-2017 17:41:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -45,75 +45,35 @@ end
 
 %addpath('data', 'functions');
 
-global signal1 signal2 Fs;
-%signal1 = 0; % temp initialization needed for plotSignals.m
-%signal2 = 0; % temp initialization needed for plotSignals.m
+global import1 import2 signal1 signal2 Fs;
 Fs = 10; % Hz
 
-% --- Executes just before main is made visible.
 function main_OpeningFcn(hObject, eventdata, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to main (see VARARGIN)
-
 % Choose default command line output for main
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
 
-% This sets up the initial plot - only do when we are invisible
-% so window can get raised using main.
 if strcmp(get(hObject,'Visible'),'off')
     plot(rand(5));
 end
 
-% UIWAIT makes main wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
-
-
-% --- Outputs from this function are returned to the command line.
 function varargout = main_OutputFcn(hObject, eventdata, handles)
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
-% --------------------------------------------------------------------
 function FileMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to FileMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-
-% --------------------------------------------------------------------
 function OpenMenuItem_Callback(hObject, eventdata, handles)
-% hObject    handle to OpenMenuItem (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 file = uigetfile('*.fig');
 if ~isequal(file, 0)
     open(file);
 end
 
-% --------------------------------------------------------------------
 function PrintMenuItem_Callback(hObject, eventdata, handles)
-% hObject    handle to PrintMenuItem (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 printdlg(handles.figure1)
 
-% --------------------------------------------------------------------
 function CloseMenuItem_Callback(hObject, eventdata, handles)
-% hObject    handle to CloseMenuItem (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 selection = questdlg(['Close ' get(handles.figure1,'Name') '?'],...
                      ['Close ' get(handles.figure1,'Name') '...'],...
                      'Yes','No','Yes');
@@ -142,76 +102,103 @@ set(hObject, 'Value', 1);
 set(hObject, 'String', listFiles());
 
 function chooseSignal1_Callback(hObject, eventdata, handles)
-global signal1
+global import1
 selected = get(hObject, 'Value');
 files = get(hObject, 'String');
 if selected > 1
-    signal1 = load(files(selected, :));
+    import1 = load(files(selected, :));
+    if size(import1, 2) > 1
+        set(handles.component1, 'Visible', 'on');
+        set(handles.component1, 'String', 1:size(import1, 2));
+        set(handles.component1text, 'Visible', 'on');
+    else
+        set(handles.component1, 'Visible', 'off');
+        set(handles.component1text, 'Visible', 'off');
+    end
 else
-    signal1 = 0;
+    import1 = 0;
+    set(handles.component1, 'Visible', 'off');
+    set(handles.component1text, 'Visible', 'off');
 end
 
 function chooseSignal2_Callback(hObject, eventdata, handles)
-global signal2
+global import2
 selected = get(hObject, 'Value');
 files = get(hObject, 'String');
 if selected > 1
-    signal2 = load(files(selected, :));
+    import2 = load(files(selected, :));
+    if size(import2, 2) > 1
+        set(handles.component2, 'Visible', 'on');
+        set(handles.component2, 'String', 1:size(import2, 2));
+        set(handles.component2text, 'Visible', 'on');
+    else
+        set(handles.component2, 'Visible', 'off');
+        set(handles.component2text, 'Visible', 'off');
+    end
 else
-    signal2 = 0;
+    import2 = 0;
+    set(handles.component2, 'Visible', 'off');
+    set(handles.component2text, 'Visible', 'off');
 end
 
-% --- Executes on button press in filterSignal1.
 function filterSignal1_Callback(hObject, eventdata, handles)
-% hObject    handle to filterSignal1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of filterSignal1
-
-
-% --- Executes on button press in saveSignals.
 function saveSignals_Callback(hObject, eventdata, handles)
-% hObject    handle to saveSignals (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-
-% --- Executes on selection change in chooseSignal2.
-
-% --- Executes on button press in filterSignal2.
 function filterSignal2_Callback(hObject, eventdata, handles)
-% hObject    handle to filterSignal2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of filterSignal2
-
-
-% --- Executes on button press in saveSignal2.
 function saveSignal2_Callback(hObject, eventdata, handles)
-% hObject    handle to saveSignal2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-
-% --- Executes on button press in showFFT1.
 function showFFT1_Callback(hObject, eventdata, handles)
-% hObject    handle to showFFT1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+global signal1;
+if signal1
+    fft_calc(signal1);
+end
 
-
-% --- Executes on button press in showFFT2.
 function showFFT2_Callback(hObject, eventdata, handles)
-% hObject    handle to showFFT2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+global signal2;
+if signal2
+    fft_calc(signal2);
+end
 
-
-% --- Executes on button press in updateGraph.
 function updateGraph_Callback(hObject, eventdata, handles)
-% hObject    handle to updateGraph (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+global import1;
+global import2;
+global signal1;
+global signal2;
+
+if size(import1, 2) > 1
+    signal1 = import1(:, get(handles.component1, 'Value'));
+else
+    signal1 = import1;
+end
+if size(import2, 2) > 1
+    signal2 = import2(:, get(handles.component2, 'Value'));
+else
+    signal2 = import2;
+end
 plotSignals();
+
+function component1_Callback(hObject, eventdata, handles)
+
+function component1_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Visible', 'off');
+set(hObject, 'Value', 1);
+
+function component2_Callback(hObject, eventdata, handles)
+
+function component2_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Visible', 'off');
+set(hObject, 'Value', 1);
+
+%% questions
+% what is special about fft_calc?
+% clearit (globals)
+% right yaxis väri
+
