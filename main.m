@@ -22,7 +22,7 @@ function varargout = main(varargin)
 
 % Edit the above text to modify the response to help main
 
-% Last Modified by GUIDE v2.5 29-Nov-2017 17:41:33
+% Last Modified by GUIDE v2.5 02-Dec-2017 15:49:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -45,10 +45,13 @@ end
 
 %addpath('data', 'functions');
 
-global import1 import2 signal1 signal2 Fs;
+function main_OpeningFcn(hObject, eventdata, handles, varargin)
+
+clear global import1 import2 signal1 signal2 MREG1 MREG2;
+
+global Fs MREG1 MREG2;
 Fs = 10; % Hz
 
-function main_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for main
 handles.output = hObject;
 
@@ -103,8 +106,14 @@ set(hObject, 'String', listFiles());
 
 function chooseSignal1_Callback(hObject, eventdata, handles)
 global import1
+global MREG1
 selected = get(hObject, 'Value');
 files = get(hObject, 'String');
+file = strip(files(selected,:));
+if strcmp(file, 'mreg.txt')
+    MREG1 = 1; % not empty
+end
+  
 if selected > 1
     import1 = load(files(selected, :));
     if size(import1, 2) > 1
@@ -122,9 +131,15 @@ else
 end
 
 function chooseSignal2_Callback(hObject, eventdata, handles)
-global import2
+global import2 MREG2
+
 selected = get(hObject, 'Value');
 files = get(hObject, 'String');
+file = strip(files(selected,:));
+if strcmp(file, 'mreg.txt')
+    MREG2 = 1;
+end
+
 if selected > 1
     import2 = load(files(selected, :));
     if size(import2, 2) > 1
@@ -142,10 +157,32 @@ else
 end
 
 function filterSignal1_Callback(hObject, eventdata, handles)
+if get(hObject, 'Value')
+    set(handles.lowerBound1, 'Visible', 'on');
+    set(handles.upperBound1, 'Visible', 'on');
+    set(handles.lowerBound1text, 'Visible', 'on');
+    set(handles.upperBound1text, 'Visible', 'on');
+else
+    set(handles.lowerBound1, 'Visible', 'off');
+    set(handles.upperBound1, 'Visible', 'off');
+    set(handles.lowerBound1text, 'Visible', 'off');
+    set(handles.upperBound1text, 'Visible', 'off');
+end   
 
 function saveSignals_Callback(hObject, eventdata, handles)
 
 function filterSignal2_Callback(hObject, eventdata, handles)
+if get(hObject, 'Value')
+    set(handles.lowerBound2, 'Visible', 'on');
+    set(handles.upperBound2, 'Visible', 'on');
+    set(handles.lowerBound2text, 'Visible', 'on');
+    set(handles.upperBound2text, 'Visible', 'on');
+else
+    set(handles.lowerBound2, 'Visible', 'off');
+    set(handles.upperBound2, 'Visible', 'off');
+    set(handles.lowerBound2text, 'Visible', 'off');
+    set(handles.upperBound2text, 'Visible', 'off');
+end 
 
 function saveSignal2_Callback(hObject, eventdata, handles)
 
@@ -166,6 +203,18 @@ global import1;
 global import2;
 global signal1;
 global signal2;
+global Fs;
+global MREG1;
+global MREG2;
+global fig1;
+global fig2;
+
+if ishandle(fig1)
+    close(fig1);
+end
+if ishandle(fig2)
+    close(fig2);
+end
 
 if size(import1, 2) > 1
     signal1 = import1(:, get(handles.component1, 'Value'));
@@ -177,7 +226,32 @@ if size(import2, 2) > 1
 else
     signal2 = import2;
 end
+
+if get(handles.filterSignal1, 'Value')
+    signal1 = y_IdealFilter(signal1, 1/Fs, [get(handles.lowerBound1, 'Value') get(handles.upperBound1, 'Value')]);
+end
+if get(handles.filterSignal2, 'Value')
+    signal2 = y_IdealFilter(signal2, 1/Fs, [get(handles.lowerBound2, 'Value') get(handles.upperBound2, 'Value')]);
+end
+
 plotSignals();
+
+if MREG1
+    img = get(handles.component1, 'Value');
+    file1 = strjoin(['MREG_components\MREG_IC_' string(img) '.png'], '');
+    img1 = imread(convertStringsToChars(file1));
+    fig1 = figure;
+    imshow(img1);
+    clear global MREG1;
+end
+if MREG2
+    img = get(handles.component2, 'Value');
+    file2 = strjoin(['MREG_components\MREG_IC_' string(img) '.png'], '');
+    img2 = imread(convertStringsToChars(file2));
+    fig2 = figure;
+    imshow(img2);
+    clear global MREG2;
+end
 
 function component1_Callback(hObject, eventdata, handles)
 
@@ -197,8 +271,47 @@ end
 set(hObject, 'Visible', 'off');
 set(hObject, 'Value', 1);
 
-%% questions
-% what is special about fft_calc?
-% clearit (globals)
-% right yaxis väri
+function pushbutton7_Callback(hObject, eventdata, handles)
 
+[filename, pathname] = uigetfile('*.txt', 'Select file to be analyzed')
+
+function lowerBound1_Callback(hObject, eventdata, handles)
+
+function lowerBound1_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Visible', 'off');
+set(hObject, 'Value', 0);
+
+function upperBound1_Callback(hObject, eventdata, handles)
+
+function upperBound1_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Visible', 'off');
+set(hObject, 'Value', 0);
+
+function lowerBound2_Callback(hObject, eventdata, handles)
+
+function lowerBound2_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Visible', 'off');
+set(hObject, 'Value', 0);
+
+function upperBound2_Callback(hObject, eventdata, handles)
+
+function upperBound2_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+set(hObject, 'Visible', 'off');
+set(hObject, 'Value', 100);
+
+%% questions
+% filter not working?

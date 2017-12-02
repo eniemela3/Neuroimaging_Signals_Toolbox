@@ -28,6 +28,8 @@ if signal2
     xlabel('Time (s)');
 end
 
-set(gca, 'Xlim', [0 (len - 1)/Fs]);
+if len > 1
+    set(gca, 'Xlim', [0 (len - 1)/Fs]);
+end
 
 end
