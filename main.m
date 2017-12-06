@@ -1,28 +1,4 @@
 function varargout = main(varargin)
-% MAIN MATLAB code for main.fig
-%      MAIN, by itself, creates a new MAIN or raises the existing
-%      singleton*.
-%
-%      H = MAIN returns the handle to a new MAIN or the handle to
-%      the existing singleton*.
-%
-%      MAIN('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MAIN.M with the given input arguments.
-%
-%      MAIN('Property','Value',...) creates a new MAIN or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before main_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to main_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
-
-% Edit the above text to modify the response to help main
-
-% Last Modified by GUIDE v2.5 03-Dec-2017 10:40:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -42,6 +18,10 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
+
+% Neuroimaging_Singals_Toolbox
+% (c) Julia Jyrkkä, Erika Niemelä
+% Full documentation available in MATLAB_Report.docx
 
 function main_OpeningFcn(hObject, eventdata, handles, varargin)
 
@@ -84,8 +64,6 @@ end
 
 delete(handles.figure1)
 
-%% Signal 1 & 2 select drop down menus
-
 function chooseSignal1_CreateFcn(hObject, eventdata, handles)
 
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -122,7 +100,7 @@ if file
             set(handles.component1text, 'Visible', 'off');
         end
     catch ME
-        msgbox('Invalid file');
+        waitfor(msgbox('Invalid file'));
     end
 else
     import1 = [];
@@ -155,7 +133,7 @@ if file
             set(handles.component2text, 'Visible', 'off');
         end
     catch ME
-         msgbox('Invalid file');
+         waitfor(msgbox('Invalid file'));
     end
 else
     import2 = [];
@@ -199,7 +177,7 @@ if signal1
         try
             dlmwrite(file, signal1, 'delimiter', "\n");
         catch ME    
-            msgbox('Unable to save file into the specified directory');
+            waitfor(msgbox('Unable to save file into the specified directory'));
         end
     end
 end
@@ -214,7 +192,7 @@ if signal2
         try
             dlmwrite(file, signal2, 'delimiter', "\n");
         catch ME    
-            msgbox('Unable to save file into the specified directory');
+            waitfor(msgbox('Unable to save file into the specified directory'));
         end
     end
 end
@@ -233,6 +211,7 @@ end
 
 function updateGraph_Callback(hObject, eventdata, handles)
 global import1 import2 signal1 signal2 Fs MREG1 MREG2 fig1 fig2;
+errorflag = 0;
 
 if ishandle(fig1)
     close(fig1);
@@ -254,9 +233,14 @@ end
 
 if signal1
     if get(handles.filterSignal1, 'Value')
-        signal1 = y_IdealFilter(signal1, 1/Fs, [get(handles.lowerBound1, 'Value') get(handles.upperBound1, 'Value')]);
+        if ((get(handles.lowerBound1, 'Value') >= 0) && (get(handles.upperBound1, 'Value') >= 0)) ...
+        && ((get(handles.lowerBound1, 'Value') < get(handles.upperBound1, 'Value')) ...
+        || ((get(handles.upperBound1, 'Value') == 0) && (get(handles.lowerBound1, 'Value') ~= 0)))
+            signal1 = y_IdealFilter(signal1, 1/Fs, [get(handles.lowerBound1, 'Value') get(handles.upperBound1, 'Value')]);  
+        else
+            errorflag = 1;
+        end
     end
-    
     cv1 = round(CV(signal1), 2);
     set(handles.showCV1, 'String', strjoin([cv1 "%"]));
 else
@@ -265,13 +249,23 @@ end
 
 if signal2
     if get(handles.filterSignal2, 'Value')
-        signal2 = y_IdealFilter(signal2, 1/Fs, [get(handles.lowerBound2, 'Value') get(handles.upperBound2, 'Value')]);
+        if ((get(handles.lowerBound2, 'Value') >= 0) && (get(handles.upperBound2, 'Value') >= 0)) ...
+        && ((get(handles.lowerBound2, 'Value') < get(handles.upperBound2, 'Value')) ...
+        || ((get(handles.upperBound2, 'Value') == 0) && (get(handles.lowerBound2, 'Value') ~= 0)))
+            signal2 = y_IdealFilter(signal2, 1/Fs, [get(handles.lowerBound2, 'Value') get(handles.upperBound2, 'Value')]);  
+        else
+            errorflag = 1;
+        end
     end
 
     cv2 = round(CV(signal2), 2);
     set(handles.showCV2, 'String', strjoin([cv2 "%"]));
 else
     set(handles.showCV2, 'String', "");
+end
+
+if errorflag
+    waitfor(msgbox('Check filter boundaries'));
 end
 
 plotSignals();
@@ -332,7 +326,7 @@ try
         throw(ME);
     end
 catch ME
-    msgbox('Invalid input');
+    waitfor(msgbox('Invalid input'));
 end
 
 function lowerBound1_CreateFcn(hObject, eventdata, handles)
@@ -352,7 +346,7 @@ try
         throw(ME);
     end
 catch ME
-    msgbox('Invalid input');
+    waitfor(msgbox('Invalid input'));
 end
 
 function upperBound1_CreateFcn(hObject, eventdata, handles)
@@ -372,7 +366,7 @@ try
         throw(ME);
     end
 catch ME
-    msgbox('Invalid input');
+    waitfor(msgbox('Invalid input'));
 end
 
 function lowerBound2_CreateFcn(hObject, eventdata, handles)
@@ -391,7 +385,7 @@ try
         throw(ME);
     end
 catch ME
-    msgbox('Invalid input');
+    waitfor(msgbox('Invalid input'));
 end
 
 function upperBound2_CreateFcn(hObject, eventdata, handles)
@@ -399,8 +393,4 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 set(hObject, 'Visible', 'off');
-set(hObject, 'Value', 100);
-
-%% q's
-% save to different directory than working dir?
-% scientific notation or normal decimals?
+set(hObject, 'Value', 0);
